@@ -44,7 +44,7 @@ def print_all_subscriptions(db_path, version):
         cursor.execute(f"SELECT id, {version}_subscription FROM subscriptions;")
         subscriptions = cursor.fetchall()
 
-        print(f"\n📄 Subscriptions ({len(subscriptions)} total):\n")
+        print(f"\nSubscriptions ({len(subscriptions)} total):\n")
         for sub_id, text in subscriptions:
             print(f"ID {sub_id}: {text}\n")
 
