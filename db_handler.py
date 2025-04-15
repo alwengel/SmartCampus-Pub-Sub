@@ -142,22 +142,34 @@ class DBHandler:
         identifiers = [i for i in range(64) if bitmask & (1 << i)]
         return identifiers
 
-if __name__=="__main__":
+    def save_to_json(self, data, filename):
+        """
+        Saves the provided data to a JSON file.
+
+        Args:
+            data (Any): The data to save.
+            filename (str): The name of the file to save the data into.
+        """
+        try:
+            with open(filename, 'w', encoding='utf-8') as f:
+                json.dump(data, f, ensure_ascii=False, indent=2)
+            print(f"Data successfully saved to {filename}")
+        except IOError as e:
+            print(f"An error occurred while saving to {filename}: {e}")
+
+
+if __name__ == "__main__":
     database = "smartcampus.db"
+    number_of_publications = 100
+
 
     with DBHandler(database) as db:
         sql_subs = db.get_subscriptions("sql")
-        nlp_subs = db.get_subscriptions("nlp")
-        rand_pubs = db.get_random_publications_with_matches(1000, "sql")
+        rand_pubs = db.get_random_publications_with_matches(number_of_publications, "sql")
 
-        print("SQL SUBS:")
-        for sub in sql_subs:
-            print(sub)
+        # Save to JSON
 
-        print("\nNLP SUBS:")
-        for sub in nlp_subs:
-            print(sub)
+        dir = "smartcampus"
 
-        print("\nRandom Publications with Matches:")
-        for pub in rand_pubs:
-            print(json.dumps(pub, indent=2))
+        db.save_to_json(sql_subs, f"{dir}/sql_subscriptions.json")
+        db.save_to_json(rand_pubs, f"{dir}/publications_{number_of_publications}.json")
