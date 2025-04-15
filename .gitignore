@@ -1,2 +1,5 @@
 *.db
 .vscode/
+*.db-shm
+*.db-wal
+smartcampus/*
