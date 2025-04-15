@@ -93,12 +93,7 @@ class DBHandler:
                 raw_matches = pub["subscription_matches"]
                 match_ids = []
                 if raw_matches:
-                    try:
-                        if isinstance(raw_matches, bytes):
-                            raw_matches = raw_matches.decode("utf-8")
-                        match_ids = json.loads(raw_matches)
-                    except (json.JSONDecodeError, TypeError, ValueError):
-                        match_ids = []
+                    match_ids = self.decode_blob_to_identifiers(raw_matches)
 
                 matches = []
                 for sub_id in match_ids:
@@ -121,7 +116,31 @@ class DBHandler:
         except sqlite3.Error as e:
             print(f"An error occurred while fetching publications: {e}")
             return []
+        
 
+    def decode_blob_to_identifiers(self, blob):
+        """
+        Decodes a BLOB (8-byte integer) to extract active subscription bit positions.
+
+        Args:
+            blob (bytes): The 8-byte BLOB representing a 64-bit bitmask.
+
+        Returns:
+            list: A list of integers representing active bit positions (0-63) where bits are set to 1.
+        """
+        if blob is None:
+            return []
+        
+        # Ensure the blob is in bytes format
+        if isinstance(blob, str):
+            blob = bytes(blob, 'latin1')  # Use 'latin1' encoding to keep byte values unchanged
+        
+        # Convert the BLOB to a 64-bit integer
+        bitmask = int.from_bytes(blob, byteorder='big')
+
+        # Identify active bit positions
+        identifiers = [i for i in range(64) if bitmask & (1 << i)]
+        return identifiers
 
 if __name__=="__main__":
     database = "smartcampus.db"
@@ -129,7 +148,7 @@ if __name__=="__main__":
     with DBHandler(database) as db:
         sql_subs = db.get_subscriptions("sql")
         nlp_subs = db.get_subscriptions("nlp")
-        rand_pubs = db.get_random_publications_with_matches(3, "sql")
+        rand_pubs = db.get_random_publications_with_matches(1000, "sql")
 
         print("SQL SUBS:")
         for sub in sql_subs:
