@@ -414,6 +414,53 @@ def drop_column_from_table(db_path, table_name, column_to_remove):
         print(f"Value error: {ve}")
 
 
+def add_running_id_primary_key_to_publications(db_path):
+    """
+    Adds a new 'id' column as an INTEGER PRIMARY KEY to the 'publications' table.
+    Rebuilds the table and auto-populates the ID starting from 0.
+    """
+    try:
+        with sqlite3.connect(db_path) as conn:
+            cursor = conn.cursor()
+
+            # Get the current schema of publications
+            cursor.execute("PRAGMA table_info(publications);")
+            columns_info = cursor.fetchall()
+            current_columns = [col[1] for col in columns_info]
+
+            if "id" in current_columns:
+                print("The 'id' column already exists in the 'publications' table.")
+                return
+
+            print("⚙️ Rebuilding 'publications' table with 'id' as PRIMARY KEY...")
+
+            # Build new schema with id as INTEGER PRIMARY KEY AUTOINCREMENT
+            new_columns = ["id INTEGER PRIMARY KEY AUTOINCREMENT"]
+            for col in columns_info:
+                col_def = f"{col[1]} {col[2]}"
+                if col[3]:  # NOT NULL
+                    col_def += " NOT NULL"
+                new_columns.append(col_def)
+            new_schema_sql = ", ".join(new_columns)
+
+            temp_table = "publications_temp"
+
+            # Create temp table
+            cursor.execute(f'CREATE TABLE {temp_table} ({new_schema_sql});')
+
+            # Copy data into new table (exclude the new 'id' column)
+            columns_to_copy = ", ".join([f'"{col}"' for col in current_columns])
+            cursor.execute(f'INSERT INTO {temp_table} ({columns_to_copy}) SELECT {columns_to_copy} FROM publications;')
+
+            # Replace original table
+            cursor.execute("DROP TABLE publications;")
+            cursor.execute(f'ALTER TABLE {temp_table} RENAME TO publications;')
+
+            conn.commit()
+            print("✅ 'id' column added to 'publications' as PRIMARY KEY.")
+    except sqlite3.Error as e:
+        print(f"SQLite error: {e}")
+
 db_path= "smartcampus.db"
 
 # Add missing index
@@ -432,7 +479,6 @@ print("")
 #print("ANALYZING DATABASE")
 #analyze_database(db_path)
 print("")
-update_subscription_texts(db_path=db_path)
 
 print("SAVING SCHEMA")
-print_all_subscriptions(db_path, version="sql")
+save_db_schema_to_file(db_path)
