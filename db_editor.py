@@ -414,7 +414,7 @@ def drop_column_from_table(db_path, table_name, column_to_remove):
         print(f"Value error: {ve}")
 
 
-db_path= "/home/alexander/Documents/University/SmartCampus-Pub-Sub/smartcampus.db"
+db_path= "smartcampus.db"
 
 # Add missing index
 #print("ADDING INDEX")
