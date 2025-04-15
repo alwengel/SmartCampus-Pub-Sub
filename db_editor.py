@@ -4,14 +4,14 @@ import re
 def update_subscription_texts(db_path):
     """
     Replaces all occurrences of 'advertisement' with 'publication'
-    in the 'subscription_text' column of the subscriptions table.
+    in the 'sql_subscription' column of the subscriptions table.
     """
     try:
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
 
         # Fetch all subscriptions
-        cursor.execute("SELECT id, sql FROM subscriptions;")
+        cursor.execute("SELECT id, sql_subscription FROM subscriptions;")
         subscriptions = cursor.fetchall()
 
         updated_count = 0
@@ -20,7 +20,7 @@ def update_subscription_texts(db_path):
             if text and "advertisement" in text:
                 new_text = text.replace("advertisement", "publication")
                 cursor.execute(
-                    "UPDATE subscriptions SET subscription_text = ? WHERE id = ?;",
+                    "UPDATE subscriptions SET sql_subscription = ? WHERE id = ?;",
                     (new_text, sub_id)
                 )
                 updated_count += 1
@@ -33,7 +33,7 @@ def update_subscription_texts(db_path):
     finally:
         conn.close()
 
-def print_all_subscriptions(db_path):
+def print_all_subscriptions(db_path, version):
     """
     Prints all subscriptions from the subscriptions table.
     """
@@ -41,7 +41,7 @@ def print_all_subscriptions(db_path):
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
 
-        cursor.execute("SELECT id, subscription_text FROM subscriptions;")
+        cursor.execute(f"SELECT id, {version}_subscription FROM subscriptions;")
         subscriptions = cursor.fetchall()
 
         print(f"\n📄 Subscriptions ({len(subscriptions)} total):\n")
@@ -414,37 +414,6 @@ def drop_column_from_table(db_path, table_name, column_to_remove):
         print(f"Value error: {ve}")
 
 
-
-def print_all_subscriptions(db_path):
-    """
-    Connects to the SQLite DB and prints all rows from the subscriptions table.
-
-    Args:
-        db_path (str): Path to your SQLite database file.
-    """
-    try:
-        with sqlite3.connect(db_path) as conn:
-            cursor = conn.cursor()
-            cursor.execute("SELECT * FROM subscriptions")
-            rows = cursor.fetchall()
-
-            if not rows:
-                print("No subscriptions found.")
-                return
-
-            # Get column names
-            col_names = [description[0] for description in cursor.description]
-
-            print("All Subscriptions:\n")
-            for row in rows:
-                for col_name, value in zip(col_names, row):
-                    print(f"{col_name}: {value}")
-                print("-" * 40)  # separator between rows
-
-    except Exception as e:
-        print(f"Error retrieving subscriptions: {e}")
-
-
 db_path= "/home/alexander/Documents/University/SmartCampus-Pub-Sub/smartcampus.db"
 
 # Add missing index
@@ -463,7 +432,7 @@ print("")
 #print("ANALYZING DATABASE")
 #analyze_database(db_path)
 print("")
-#print_all_subscriptions(db_path=db_path)
+update_subscription_texts(db_path=db_path)
 
 print("SAVING SCHEMA")
-print_all_subscriptions(db_path)
+print_all_subscriptions(db_path, version="sql")
