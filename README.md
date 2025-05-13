@@ -2,6 +2,7 @@
 SmartCampus dataset has been expanded with subscriptions to be used for evaluating Pub-Sub systems. Subscriptions are found in SQL and natural language.
 
 ## **Database Schema**
+The only not-straight-forward data type is `subscription_matches` in Table `publications` which is a **BLOB**. In this case it is an 8-byte BLOB which represents a 64-bit bitmask. In `db_handler.py` there is a method, `decode_blob_to_integers()` that decodes a blob into a list of integers where each integer corresponds with _a matching `subscription_id` for that publication_.
 
 ### **Table: `subscriptions`**
 | Column                   | Type     |
@@ -43,7 +44,7 @@ SmartCampus dataset has been expanded with subscriptions to be used for evaluati
 | `floor`              | -        |
 | `location`           | -        |
 | `publication`        | -        |
-| `subscription_matches`| -        |
+| `subscription_matches`| BLOB    |
 | `timestamp_unix`     | -        |
 
 
