@@ -1,5 +1,5 @@
 # SmartCampus-Pub-Sub
-SmartCampus dataset has been expanded with subscriptions to be used for evaluating Pub-Sub systems. Subscriptions are found in SQL and natural language.
+SmartCampus dataset has been expanded with subscriptions to be used for evaluating Pub-Sub systems. Subscriptions are found in SQL and natural language. When handling the database, keep in mind that there are millions of rows so some actions might take a while or demand that you handle the db in batches so that your machine doesn't run out of memory.
 
 ## **Database Schema**
 The only not-straight-forward data type is `subscription_matches` in Table `publications` which is a **BLOB**. In this case it is an 8-byte BLOB which represents a 64-bit bitmask. In `db_handler.py` there is a method, `decode_blob_to_integers()` that decodes a blob into a list of integers where each integer corresponds with _a matching `subscription_id` for that publication_.
