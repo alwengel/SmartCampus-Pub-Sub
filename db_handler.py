@@ -213,37 +213,6 @@ class DBHandler:
                     subscriptions_with_errors.append(subscription)
 
         return subscriptions_with_errors
-    
-    def get_all_publications_with_errors(self, error_rate=0.1):
-        """
-        Fetches publications and randomly injects noise into a publication row based on error_rate.
-        :param error_rate: Fraction of publications to change (0.1 = 10%).
-        :return: List of publication with noise.
-        """
-        try:
-            self.cursor.execute("SELECT * FROM publications")
-            publications = self.cursor.fetchall()
-        except Exception as e:
-            print(f"Error fetching publications: {e}")
-            return []
-        
-        total = len(publications)
-        num_with_errors = int(total * error_rate)
-        error_indices = set(random.sample(range(total), num_with_errors))
-
-        result = []
-        for i, pub in enumerate(publications):
-            publication_id = pub["id"]
-            publication_text = pub["publication"]
-            if i in error_indices:
-                publication_text = self.inject_noise(publication_text, noise_rate=0.1)
-
-            result.append({
-                "publication_id": publication_id,
-                "publication": publication_text
-            })
-
-        return result
 
     def get_publications_with_errors(self, publication_version="json", error_rate=0.1):
         """
